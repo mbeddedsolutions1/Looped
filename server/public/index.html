@@ -5,28 +5,19 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splines Portal</title>
+    <title>Looped Portal</title>
 </head>
 
 <body>
-    <h2>Yeah, this is the welcome screen, you've made it 🙌</h2>
+    <h2>Configure Wifi</h2>
+    <form action="/connect" method="POST">
+        <label>SSID:</label><br>
+        <input type="text" name="ssid" required><br><br>
+        <label>Password:</label><br>
+        <input type="password" name="psk" required><br><br>
+        <button type="submit">Connect</button>
 
-    <p>
-        Have a lot of fun with your own project.<br>
-
-        Feel free to open an issue if something is not working as expected,
-        but read the troubleshooting section first.<br>
-
-        If you created a project with a captive portal based on this,
-        feel free to inform me, so that I can look into it 👍
-    </p>
-
-    <p>
-        <strong>Endpoint /api/ping test: </strong>
-        <span id="api-endpoint-test">Waiting for server response...</span>
-    </p>
-
-
+    </form>
     <script src="index.js"></script>
 </body>
 

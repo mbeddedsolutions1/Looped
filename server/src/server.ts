@@ -37,6 +37,38 @@ app.get('/', (req, res, next) => {
 app.get('/api/ping', pong);
 
 
+
+
+
+app.post('/connect', (req,res)=>{
+    const {ssid, psk { = req.body;
+    const wpaConf= '
+ctrl_interface=DIR=var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
+network={
+    ssid="${ssid}"
+    psk="${psk}"
+}
+';
+
+    fs.writeFile('/etc/wpa_supplicant/wpa_supplicant.conf, wpaConf, (err) => {
+        if (err) {
+            console.error(err);
+            res.send("Failed to Save Wifi-Config");
+            return;
+        }
+        res.send("<h2>Wifi-Saved! Rebooting...</h2>);
+        setTimeout(() => {
+            exec('sudo reboot', (err) => { if (err) console.error(err); });
+        }, 3000);
+    });
+});
+
+
+
+
 ///////////////////////////// Server listening /////////////////////////////////
 
 // Listen for requests
