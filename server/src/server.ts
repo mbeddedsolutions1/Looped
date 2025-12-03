@@ -190,6 +190,39 @@ app.get('/api/wifi-status', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/reset-wifi — Erase WiFi credentials and force AP mode on next boot
+ * Deletes /etc/wpa_supplicant/wpa_supplicant.conf
+ */
+app.post('/api/reset-wifi', async (req: Request, res: Response) => {
+  try {
+    console.log('▶ Resetting WiFi credentials...');
+    const configPath = '/etc/wpa_supplicant/wpa_supplicant.conf';
+
+    // Check if file exists
+    if (fs.existsSync(configPath)) {
+      await promisify(fs.unlink)(configPath);
+      console.log('✓ WiFi credentials erased');
+      res.json({
+        success: true,
+        message: 'WiFi credentials erased. Device will start in AP mode on next boot.'
+      });
+    } else {
+      console.log('⚠ WiFi config file not found (already reset)');
+      res.json({
+        success: true,
+        message: 'WiFi credentials already cleared.'
+      });
+    }
+  } catch (err) {
+    console.error('✗ Failed to reset WiFi:', err);
+    res.status(500).json({
+      success: false,
+      error: `Failed to erase WiFi credentials: ${err}`
+    });
+  }
+});
+
 // ============================================================================
 // Error Handling
 // ============================================================================
