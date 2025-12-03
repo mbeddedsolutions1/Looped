@@ -144,23 +144,46 @@ def setup_server_service():
     subprocess.run("./setup-server.sh", shell=True, cwd="./access-point", check=True)
 
 
+def install_python_dependencies():
+    print()
+    ColorPrint.print(cyan, "▶ Install Python dependencies for keypad")
+
+    # Install RPi.GPIO and requests for the keypad daemon
+    subprocess.call("pip3 install RPi.GPIO requests", shell=True)
+
+
+def setup_keypad_service():
+    print()
+    ColorPrint.print(cyan, "▶ Configure Keypad DTMF service to start at boot")
+
+    print("We will now install the keypad DTMF scanner as a systemd service.")
+    answer = query_yes_no("Continue?", default="yes")
+
+    if not answer:
+        return
+
+    subprocess.run("sudo chmod a+x ./setup-keypad.sh", shell=True, cwd="./access-point", check=True)
+    subprocess.run("./setup-keypad.sh", shell=True, cwd="./access-point", check=True)
+
+
 def done():
     print()
     ColorPrint.print(cyan, "▶ Done")
 
     final_msg = (
         "Awesome, we are done here. Grab your phone and look for the\n"
-        '"Splines Raspi AP" WiFi (password: "splinesraspi").'
+        '"Looped Setup" WiFi.'
         "\n"
-        "When you reboot the Raspi, wait 2 minutes, then the WiFi network\n"
-        "and the server should be up and running again automatically.\n"
+        "When you reboot the Raspi, wait 2 minutes, then:\n"
+        "  - WiFi network will start\n"
+        "  - Server will start listening on port 3000\n"
+        "  - Keypad scanner will start and listen for key presses\n"
         "\n"
-        "If you like this project, consider giving a GitHub star ⭐\n"
-        "If there are any problems, checkout the troubleshooting section here:\n"
-        "https://github.com/Splines/raspi-captive-portal or open a new issue\n"
-        "on GitHub."
+        "Press any key on the 4x4 keypad to hear the DTMF tone.\n"
+        "View keypad logs with: sudo journalctl -u looped-keypad -f\n"
     )
     ColorPrint.print(magenta, final_msg)
+
 
 
 def execute_all():
@@ -170,9 +193,11 @@ def execute_all():
     install_node()
     setup_access_point()
 
+    install_python_dependencies()
     install_server_dependencies()
     build_server()
     setup_server_service()
+    setup_keypad_service()
 
     done()
 

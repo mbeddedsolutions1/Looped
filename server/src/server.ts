@@ -4,6 +4,8 @@ import { pong } from './pong';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as http from 'http';
+import * as WebSocket from 'ws';
 
 const execPromise = promisify(exec);
 
