@@ -1,0 +1,10 @@
+[
+  { "id": 1, "contact": "John Doe", "number": "+1-555-0100", "type": "incoming", "status": "answered", "duration": 225, "timestamp": "2025-11-28T09:12:00Z", "device_id": 1 },
+  { "id": 2, "contact": "Jane Smith", "number": "+1-555-0123", "type": "outgoing", "status": "answered", "duration": 320, "timestamp": "2025-11-28T07:40:00Z", "device_id": 2 },
+  { "id": 3, "contact": null, "number": "+1-555-0188", "type": "incoming", "status": "missed", "duration": 0, "timestamp": "2025-11-28T06:05:00Z", "device_id": 1 },
+  { "id": 4, "contact": "Support", "number": "+1-555-0144", "type": "outgoing", "status": "voicemail", "duration": 56, "timestamp": "2025-11-27T22:30:00Z", "device_id": 3 },
+  { "id": 5, "contact": "Alice Park", "number": "+1-555-0177", "type": "incoming", "status": "answered", "duration": 85, "timestamp": "2025-11-27T20:15:00Z", "device_id": 2 },
+  { "id": 6, "contact": "Bob Lee", "number": "+1-555-0111", "type": "outgoing", "status": "failed", "duration": 0, "timestamp": "2025-11-27T18:05:00Z", "device_id": 4 },
+  { "id": 7, "contact": "Carol", "number": "+1-555-0199", "type": "incoming", "status": "answered", "duration": 143, "timestamp": "2025-11-27T16:50:00Z", "device_id": 1 },
+  { "id": 8, "contact": null, "number": "+1-555-0166", "type": "outgoing", "status": "answered", "duration": 210, "timestamp": "2025-11-27T15:30:00Z", "device_id": 3 }
+]

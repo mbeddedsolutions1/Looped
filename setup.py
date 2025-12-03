@@ -101,6 +101,13 @@ def install_server_dependencies():
 
     subprocess.call("npm install", shell=True, cwd="./server")
 
+    # If a frontend exists at ../frontend, build and import it into server/public
+    try:
+        subprocess.call("npm run build-frontend", shell=True, cwd="./server")
+    except Exception:  # pylint: disable=broad-except
+        # Non-fatal: continue even if frontend build/import fails
+        print("Notice: frontend build/import step failed or was skipped.")
+
 
 def build_server():
     print()

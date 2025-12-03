@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "nodemon",
     "dev-once": "kill-port 3000 && node -r ts-node/register src/server.ts",
+    "build-frontend": "sh ./scripts/import_frontend.sh",
     "build": "rimraf ./build && tsc",
     "start": "node build/server.js",
     "build-start": "npm run build && npm run start",

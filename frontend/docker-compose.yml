@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+  asterisk:
+    image: asterisk:latest
+    # NOTE: this is a placeholder. Configure volumes, ports (5060/5061, RTP range), and config as needed.
+    ports:
+      - "5060:5060/udp"
+
+# You can also add a frontend service here to build static assets if you want
