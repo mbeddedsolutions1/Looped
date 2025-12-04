@@ -193,6 +193,21 @@ def setup_startup_service():
     subprocess.run("./setup-startup.sh", shell=True, cwd="./access-point", check=True)
 
 
+def setup_mdns():
+    print()
+    ColorPrint.print(cyan, "▶ Configure mDNS (Avahi) and hostname")
+
+    print("This step will install and enable avahi-daemon and optionally set the system hostname (looped by default).")
+    answer = query_yes_no("Continue?", default="yes")
+
+    if not answer:
+        return
+
+    subprocess.run("sudo chmod a+x ./setup-mdns.sh", shell=True, cwd="./access-point", check=True)
+    # Allow interactive apt operations in the script
+    subprocess.run("./setup-mdns.sh looped", shell=True, cwd="./access-point", check=True)
+
+
 def done():
     print()
     ColorPrint.print(cyan, "▶ Done")
