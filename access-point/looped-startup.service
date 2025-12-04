@@ -6,8 +6,8 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=root
-WorkingDirectory=/home/admin/looped/access-point
-ExecStart=/bin/bash /home/admin/looped/access-point/looped-startup.sh
+WorkingDirectory=/home/admin/Looped/access-point
+ExecStart=/bin/bash /home/admin/Looped/access-point/looped-startup.sh
 RemainAfterExit=yes
 StandardOutput=journal
 StandardError=journal
