@@ -166,6 +166,19 @@ def setup_keypad_service():
     subprocess.run("./setup-keypad.sh", shell=True, cwd="./access-point", check=True)
 
 
+def setup_pjsua_service():
+    print()
+    ColorPrint.print(cyan, "▶ Configure pjsua SIP client service to start at boot")
+
+    print("We will now install the pjsua SIP client as a systemd service.")
+    answer = query_yes_no("Continue?", default="yes")
+
+    if not answer:
+        return
+
+    subprocess.run("sudo chmod a+x ./setup-pjsua.sh", shell=True, cwd="./access-point", check=True)
+    subprocess.run("./setup-pjsua.sh", shell=True, cwd="./access-point", check=True)
+
 def setup_startup_service():
     print()
     ColorPrint.print(cyan, "▶ Configure boot startup service (starts all services)")
@@ -215,6 +228,7 @@ def execute_all():
     build_server()
     setup_server_service()
     setup_keypad_service()
+    setup_pjsua_service()
     setup_startup_service()
 
     done()

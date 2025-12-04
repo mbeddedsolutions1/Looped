@@ -1,0 +1,18 @@
+[Unit]
+Description=Looped pjsua SIP client (register to Asterisk)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/admin/looped/frontend/backend/app
+ExecStart=/usr/bin/env python3 /home/admin/looped/frontend/backend/app/pjsua_client.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=looped-pjsua
+
+[Install]
+WantedBy=multi-user.target
