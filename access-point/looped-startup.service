@@ -1,0 +1,17 @@
+[Unit]
+Description=Looped Services Startup (No Installation)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/home/admin/looped/access-point
+ExecStart=/bin/bash /home/admin/looped/access-point/looped-startup.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=looped-startup
+
+[Install]
+WantedBy=multi-user.target

@@ -166,6 +166,20 @@ def setup_keypad_service():
     subprocess.run("./setup-keypad.sh", shell=True, cwd="./access-point", check=True)
 
 
+def setup_startup_service():
+    print()
+    ColorPrint.print(cyan, "▶ Configure boot startup service (starts all services)")
+
+    print("We will now install the startup service that starts all Looped services on every boot.")
+    answer = query_yes_no("Continue?", default="yes")
+
+    if not answer:
+        return
+
+    subprocess.run("sudo chmod a+x ./setup-startup.sh", shell=True, cwd="./access-point", check=True)
+    subprocess.run("./setup-startup.sh", shell=True, cwd="./access-point", check=True)
+
+
 def done():
     print()
     ColorPrint.print(cyan, "▶ Done")
@@ -181,6 +195,9 @@ def done():
         "\n"
         "Press any key on the 4x4 keypad to hear the DTMF tone.\n"
         "View keypad logs with: sudo journalctl -u looped-keypad -f\n"
+        "\n"
+        "On subsequent boots, the looped-startup.service will start all services.\n"
+        "View startup logs with: sudo journalctl -u looped-startup -f\n"
     )
     ColorPrint.print(magenta, final_msg)
 
@@ -198,6 +215,7 @@ def execute_all():
     build_server()
     setup_server_service()
     setup_keypad_service()
+    setup_startup_service()
 
     done()
 
