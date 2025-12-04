@@ -122,6 +122,19 @@ class StatusHandler(BaseHTTPRequestHandler):
                         update_call_state('ended', 'hangup-via-key')
                 else:
                     handled = False
+            else:
+                # If in an active call, send DTMF for digits and symbols
+                cs = state.get('call_state')
+                if cs in ("active", "established", "confirmed"):
+                    # send dtmf via pjsua CLI: `dtmf <digit>`
+                    try:
+                        handled = send_pjsua_cmd(f"dtmf {key}")
+                        if handled:
+                            update_call_state('active', f'dtmf:{key}')
+                    except Exception:
+                        handled = False
+                else:
+                    handled = False
 
             if handled:
                 self._send_json({"ok": True})
