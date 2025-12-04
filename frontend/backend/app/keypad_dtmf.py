@@ -52,6 +52,8 @@ AMP = 0.6               # amplitude (0.0 to 1.0)
 
 TMP_DIR = "/tmp/dtmf_wavs"
 SERVER_URL = "http://localhost:3000/api/keypad-event"
+# Also post key events to the local pjsua client which listens on port 5050
+PJSUA_KEY_URL = "http://localhost:5050/keypress"
 
 def generate_dtmf_wav(key, duration=DURATION, rate=SAMPLE_RATE):
     """Generate a mono 16-bit WAV file for a DTMF key."""
@@ -106,11 +108,19 @@ def send_keypad_event(key):
     """Send keypress event to Node.js server via HTTP."""
     try:
         payload = {"key": key, "timestamp": time.time()}
-        requests.post(
-            SERVER_URL,
-            json=payload,
-            timeout=2
-        )
+        # Post to Node backend (optional)
+        try:
+            requests.post(SERVER_URL, json=payload, timeout=2)
+        except Exception:
+            # non-fatal
+            pass
+
+        # Also notify local pjsua client so pound key can answer/hang
+        try:
+            requests.post(PJSUA_KEY_URL, json={"key": key}, timeout=1)
+        except Exception:
+            # non-fatal
+            pass
     except Exception as e:
         logger.warning(f"Could not send keypad event to server: {e}")
 

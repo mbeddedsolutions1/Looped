@@ -28,12 +28,15 @@ from datetime import datetime
 import queue
 import signal
 import sys
+from typing import Optional
 
 # State shared between threads
 state = {
     "registered": False,
     "last_event": "starting",
     "last_updated": datetime.utcnow().isoformat() + "Z",
+    "call_state": None,
+    "call_info": None,
 }
 
 event_q = queue.Queue()
@@ -59,6 +62,18 @@ def update_state(registered: bool, event: str):
     event_q.put((registered, event, state["last_updated"]))
 
 
+def update_call_state(call_state: str, info: Optional[str] = None):
+    state["call_state"] = call_state
+    state["call_info"] = info
+    state["last_event"] = f"call:{call_state} {info or ''}".strip()
+    state["last_updated"] = datetime.utcnow().isoformat() + "Z"
+    event_q.put((state["registered"], state["last_event"], state["last_updated"]))
+
+
+# Global handle to the running pjsua process so we can send stdin commands
+pjsua_proc: Optional[subprocess.Popen] = None
+
+
 class StatusHandler(BaseHTTPRequestHandler):
     def _send_json(self, data, code=200):
         payload = json.dumps(data).encode("utf-8")
@@ -74,6 +89,48 @@ class StatusHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+    def do_POST(self):
+        # Restrict to localhost callers for safety
+        client = self.client_address[0]
+        if client not in ("127.0.0.1", "::1") and not client.startswith("::ffff:127.0.0.1"):
+            self.send_response(403)
+            self.end_headers()
+            return
+
+        if self.path == "/keypress":
+            length = int(self.headers.get('Content-Length', 0))
+            raw = self.rfile.read(length)
+            try:
+                payload = json.loads(raw.decode('utf-8'))
+                key = payload.get('key')
+            except Exception:
+                self._send_json({"error": "invalid json"}, code=400)
+                return
+
+            handled = False
+            # Pound key acts as answer/hang toggle
+            if key == "#":
+                cs = state.get('call_state')
+                if cs in ("incoming", "ringing"):
+                    handled = send_pjsua_cmd('a')
+                    if handled:
+                        update_call_state('active', 'answered-via-key')
+                elif cs in ("active", "established", "confirmed"):
+                    handled = send_pjsua_cmd('h')
+                    if handled:
+                        update_call_state('ended', 'hangup-via-key')
+                else:
+                    handled = False
+
+            if handled:
+                self._send_json({"ok": True})
+            else:
+                self._send_json({"ok": False, "reason": "not-handled"}, code=200)
+            return
+
+        self.send_response(404)
+        self.end_headers()
 
     def log_message(self, format, *args):
         # Silence default logging to stdout
@@ -125,15 +182,20 @@ def monitor_pjsua_process(proc: subprocess.Popen):
             print(f"{LOG_PREFIX} ({stream_name}) {line}")
             # Detect registration events in common pjsua output patterns
             lowline = line.lower()
-            if "registration complete" in lowline or "registered" in lowline and "status=200" in lowline:
+            if ("registration complete" in lowline) or ("registered" in lowline and "status=200" in lowline):
                 update_state(True, line)
             elif "registration failed" in lowline or ("status=" in lowline and ("401" in lowline or "403" in lowline or "407" in lowline)):
                 update_state(False, line)
             elif "unregistered" in lowline or "registration refresh failed" in lowline:
                 update_state(False, line)
-            elif "call" in lowline:
-                # Generic call event
-                update_state(state.get("registered", False), line)
+
+            # Call state events (best-effort matching)
+            if "incoming call" in lowline or "call from" in lowline or "ringing" in lowline:
+                update_call_state('incoming', line)
+            if "established" in lowline or "call answered" in lowline or "connected" in lowline:
+                update_call_state('active', line)
+            if "disconnected" in lowline or "call is terminated" in lowline or "hangup" in lowline or "call ended" in lowline:
+                update_call_state('ended', line)
 
     t_out = threading.Thread(target=reader, args=(proc.stdout, "STDOUT"), daemon=True)
     t_err = threading.Thread(target=reader, args=(proc.stderr, "STDERR"), daemon=True)
@@ -145,13 +207,32 @@ def monitor_pjsua_process(proc: subprocess.Popen):
     update_state(False, f"pjsua exited ({proc.returncode})")
 
 
+def send_pjsua_cmd(cmd: str) -> bool:
+    """Send a single-character command to the pjsua process stdin (non-blocking)."""
+    global pjsua_proc
+    if not pjsua_proc or pjsua_proc.stdin is None:
+        print(f"{LOG_PREFIX} No pjsua process stdin available to send '{cmd}'")
+        return False
+    try:
+        pjsua_proc.stdin.write((cmd + "\n").encode('utf-8'))
+        pjsua_proc.stdin.flush()
+        print(f"{LOG_PREFIX} Sent command to pjsua: {cmd}")
+        return True
+    except Exception as exc:
+        print(f"{LOG_PREFIX} Failed to send cmd to pjsua: {exc}")
+        return False
+
+
 def start_pjsua_and_monitor():
     args = build_pjsua_args()
     print(f"{LOG_PREFIX} Starting pjsua: {' '.join(args)}")
 
     # Use pipes for stdout/stderr
     try:
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        # expose proc so HTTP handler can send stdin commands
+        global pjsua_proc
+        pjsua_proc = proc
     except FileNotFoundError:
         print(f"{LOG_PREFIX} pjsua binary not found: {PJSUA_BIN}")
         update_state(False, "pjsua not found")
