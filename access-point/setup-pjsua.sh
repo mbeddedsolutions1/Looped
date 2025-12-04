@@ -5,7 +5,8 @@
 
 echo "Installing Looped pjsua service..."
 
-sudo cp /home/admin/looped/access-point/looped-pjsua.service /etc/systemd/system/
+# Copy service file from current directory
+sudo cp ./looped-pjsua.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable looped-pjsua.service
 sudo systemctl start looped-pjsua.service

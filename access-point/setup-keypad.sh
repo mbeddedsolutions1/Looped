@@ -4,8 +4,8 @@
 
 echo "▶ Installing Looped Keypad DTMF service..."
 
-# Copy systemd service file
-sudo cp ./access-point/looped-keypad.service /etc/systemd/system/
+# Copy systemd service file (from current directory)
+sudo cp ./looped-keypad.service /etc/systemd/system/
 
 # Reload systemd daemon
 sudo systemctl daemon-reload

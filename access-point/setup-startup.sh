@@ -5,8 +5,8 @@
 
 echo "Installing Looped Startup Service..."
 
-# Copy service file
-sudo cp /home/admin/looped/access-point/looped-startup.service /etc/systemd/system/
+# Copy service file from current directory
+sudo cp ./looped-startup.service /etc/systemd/system/
 
 # Reload systemd daemon
 sudo systemctl daemon-reload
